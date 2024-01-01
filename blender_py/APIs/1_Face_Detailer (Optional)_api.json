@@ -1,0 +1,897 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "aingdiffusion_v113.safetensors",
+      "beta_schedule": "sqrt_linear (AnimateDiff)"
+    },
+    "class_type": "CheckpointLoaderSimpleWithNoiseSelect",
+    "_meta": {
+      "title": "Load Checkpoint w/ Noise Select 🎭🅐🅓 [Var] [Order: 7]"
+    }
+  },
+  "2": {
+    "inputs": {
+      "vae_name": "anythingKlF8Anime2VaeFtMse840000_klF8Anime2.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE [Var] [Order: 8]"
+    }
+  },
+  "12": {
+    "inputs": {
+      "filename_prefix": "Cammy_NoBangs\\Images_FaceDetailed_0\\image",
+      "images": [
+        "210",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image [Sys] Imgs_Out]"
+    }
+  },
+  "93": {
+    "inputs": {
+      "model_name": "v3_sd15_mm.ckpt",
+      "beta_schedule": "sqrt_linear (AnimateDiff)",
+      "motion_scale": 1,
+      "apply_v2_models_properly": true,
+      "model": [
+        "281",
+        0
+      ],
+      "context_options": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "ADE_AnimateDiffLoaderWithContext",
+    "_meta": {
+      "title": "AnimateDiff Loader 🎭🅐🅓"
+    }
+  },
+  "94": {
+    "inputs": {
+      "context_length": 16,
+      "context_stride": 1,
+      "context_overlap": 4,
+      "context_schedule": "uniform",
+      "closed_loop": true
+    },
+    "class_type": "ADE_AnimateDiffUniformContextOptions",
+    "_meta": {
+      "title": "Uniform Context Options 🎭🅐🅓"
+    }
+  },
+  "103": {
+    "inputs": {
+      "frame_rate": 12,
+      "loop_count": 0,
+      "filename_prefix": "Cammy_NoBangs\\Videos_FaceDetailed\\video",
+      "format": "video/h265-mp4",
+      "pix_fmt": "yuv420p10le",
+      "crf": 20,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "210",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "129": {
+    "inputs": {
+      "images": [
+        "294",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "132": {
+    "inputs": {
+      "control_net_name": "control_v11f1e_sd15_tile.pth"
+    },
+    "class_type": "ControlNetLoaderAdvanced",
+    "_meta": {
+      "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝"
+    }
+  },
+  "136": {
+    "inputs": {
+      "ipadapter_file": "ip-adapter-full-face_sd15.safetensors"
+    },
+    "class_type": "IPAdapterModelLoader",
+    "_meta": {
+      "title": "Load IPAdapter Model"
+    }
+  },
+  "138": {
+    "inputs": {
+      "clip_name": "ip-adapter-plus_sd15_Clip.safetensors"
+    },
+    "class_type": "CLIPVisionLoader",
+    "_meta": {
+      "title": "Load CLIP Vision"
+    }
+  },
+  "140": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "295",
+        0
+      ],
+      "height": [
+        "296",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "274",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "141": {
+    "inputs": {
+      "interpolation": "LANCZOS",
+      "crop_position": "center",
+      "sharpening": 0,
+      "image": [
+        "140",
+        0
+      ]
+    },
+    "class_type": "PrepImageForClipVision",
+    "_meta": {
+      "title": "Prepare Image For Clip Vision"
+    }
+  },
+  "157": {
+    "inputs": {
+      "control_net_name": "control_v11p_sd15_inpaint.pth"
+    },
+    "class_type": "ControlNetLoaderAdvanced",
+    "_meta": {
+      "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝"
+    }
+  },
+  "159": {
+    "inputs": {
+      "strength": 1,
+      "start_percent": [
+        "286",
+        0
+      ],
+      "end_percent": [
+        "287",
+        0
+      ],
+      "positive": [
+        "164",
+        0
+      ],
+      "negative": [
+        "164",
+        1
+      ],
+      "control_net": [
+        "157",
+        0
+      ],
+      "image": [
+        "217",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced) [Var] [Order: 12] [Inpaint]"
+    }
+  },
+  "163": {
+    "inputs": {
+      "images": [
+        "217",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "164": {
+    "inputs": {
+      "strength": 1,
+      "start_percent": [
+        "286",
+        0
+      ],
+      "end_percent": [
+        "287",
+        0
+      ],
+      "positive": [
+        "280",
+        0
+      ],
+      "negative": [
+        "279",
+        0
+      ],
+      "control_net": [
+        "132",
+        0
+      ],
+      "image": [
+        "294",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced) [Var] [Order: 11] [Tile]"
+    }
+  },
+  "166": {
+    "inputs": {
+      "lora_name": "lcm-lora-sdv1-5.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "167": {
+    "inputs": {
+      "sampling": "lcm",
+      "zsnr": false,
+      "model": [
+        "166",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingDiscrete",
+    "_meta": {
+      "title": "ModelSamplingDiscrete"
+    }
+  },
+  "169": {
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": [
+        "166",
+        1
+      ]
+    },
+    "class_type": "CLIPSetLastLayer",
+    "_meta": {
+      "title": "CLIP Set Last Layer [Var]"
+    }
+  },
+  "171": {
+    "inputs": {
+      "b1": 1,
+      "b2": 1.1,
+      "s1": 0.9,
+      "s2": 0.2,
+      "model": [
+        "93",
+        0
+      ]
+    },
+    "class_type": "FreeU_V2",
+    "_meta": {
+      "title": "FreeU_V2"
+    }
+  },
+  "175": {
+    "inputs": {
+      "mimic_scale": 7,
+      "threshold_percentile": 1,
+      "mimic_mode": "Constant",
+      "mimic_scale_min": 0,
+      "cfg_mode": "Constant",
+      "cfg_scale_min": 0,
+      "sched_val": 1,
+      "separate_feature_channels": "enable",
+      "scaling_startpoint": "MEAN",
+      "variability_measure": "AD",
+      "interpolate_phi": 1,
+      "model": [
+        "171",
+        0
+      ]
+    },
+    "class_type": "DynamicThresholdingFull",
+    "_meta": {
+      "title": "DynamicThresholdingFull"
+    }
+  },
+  "183": {
+    "inputs": {
+      "model_name": "bbox/face_yolov8m.pt"
+    },
+    "class_type": "UltralyticsDetectorProvider",
+    "_meta": {
+      "title": "UltralyticsDetectorProvider"
+    }
+  },
+  "199": {
+    "inputs": {
+      "image": [
+        "272",
+        0
+      ]
+    },
+    "class_type": "ImpactImageBatchToImageList",
+    "_meta": {
+      "title": "Image batch to Image List"
+    }
+  },
+  "201": {
+    "inputs": {
+      "model_name": "sam_vit_b_01ec64.pth",
+      "device_mode": "AUTO"
+    },
+    "class_type": "SAMLoader",
+    "_meta": {
+      "title": "SAMLoader (Impact)"
+    }
+  },
+  "203": {
+    "inputs": {
+      "bbox_threshold": 0.5,
+      "bbox_dilation": 0,
+      "crop_factor": 3,
+      "drop_size": 10,
+      "sub_threshold": 0.5,
+      "sub_dilation": 0,
+      "sub_bbox_expansion": 0,
+      "sam_mask_hint_threshold": 0.7,
+      "post_dilation": 0,
+      "bbox_detector": [
+        "183",
+        0
+      ],
+      "image": [
+        "199",
+        0
+      ],
+      "sam_model_opt": [
+        "201",
+        0
+      ],
+      "segm_detector_opt": [
+        "183",
+        1
+      ]
+    },
+    "class_type": "ImpactSimpleDetectorSEGS",
+    "_meta": {
+      "title": "Simple Detector (SEGS)"
+    }
+  },
+  "204": {
+    "inputs": {
+      "segs": [
+        "203",
+        0
+      ]
+    },
+    "class_type": "SegsToCombinedMask",
+    "_meta": {
+      "title": "SEGS to MASK (combined)"
+    }
+  },
+  "205": {
+    "inputs": {
+      "mask": [
+        "204",
+        0
+      ]
+    },
+    "class_type": "MaskListToMaskBatch",
+    "_meta": {
+      "title": "Mask List to Masks"
+    }
+  },
+  "206": {
+    "inputs": {
+      "expand": 15,
+      "incremental_expandrate": 0,
+      "tapered_corners": true,
+      "flip_input": false,
+      "use_cuda": true,
+      "blur_radius": 5,
+      "sigma": 1,
+      "lerp_alpha": 1,
+      "decay_factor": 1,
+      "mask": [
+        "205",
+        0
+      ]
+    },
+    "class_type": "GrowMaskWithBlur",
+    "_meta": {
+      "title": "GrowMaskWithBlur"
+    }
+  },
+  "207": {
+    "inputs": {
+      "mask": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "MaskToImage",
+    "_meta": {
+      "title": "Convert Mask to Image"
+    }
+  },
+  "209": {
+    "inputs": {
+      "crop_size_mult": 2,
+      "bbox_smooth_alpha": 0.5,
+      "original_images": [
+        "266",
+        1
+      ],
+      "masks": [
+        "266",
+        0
+      ]
+    },
+    "class_type": "BatchCropFromMaskAdvanced",
+    "_meta": {
+      "title": "BatchCropFromMaskAdvanced"
+    }
+  },
+  "210": {
+    "inputs": {
+      "border_blending": 0.25,
+      "crop_rescale": 1,
+      "use_combined_mask": false,
+      "use_square_mask": true,
+      "original_images": [
+        "209",
+        0
+      ],
+      "cropped_images": [
+        "213",
+        0
+      ],
+      "cropped_masks": [
+        "209",
+        2
+      ],
+      "combined_crop_mask": [
+        "209",
+        4
+      ],
+      "bboxes": [
+        "209",
+        5
+      ],
+      "combined_bounding_box": [
+        "209",
+        6
+      ]
+    },
+    "class_type": "BatchUncropAdvanced",
+    "_meta": {
+      "title": "BatchUncropAdvanced"
+    }
+  },
+  "211": {
+    "inputs": {
+      "seed": 999999999,
+      "steps": [
+        "275",
+        0
+      ],
+      "cfg": [
+        "276",
+        0
+      ],
+      "sampler_name": "lcm",
+      "scheduler": "sgm_uniform",
+      "denoise": [
+        "277",
+        0
+      ],
+      "model": [
+        "175",
+        0
+      ],
+      "positive": [
+        "159",
+        0
+      ],
+      "negative": [
+        "159",
+        1
+      ],
+      "latent_image": [
+        "221",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "213": {
+    "inputs": {
+      "samples": [
+        "211",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "217": {
+    "inputs": {
+      "image": [
+        "294",
+        0
+      ],
+      "mask": [
+        "209",
+        2
+      ]
+    },
+    "class_type": "InpaintPreprocessor",
+    "_meta": {
+      "title": "Inpaint Preprocessor"
+    }
+  },
+  "219": {
+    "inputs": {
+      "images": [
+        "207",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "220": {
+    "inputs": {
+      "images": [
+        "272",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "221": {
+    "inputs": {
+      "grow_mask_by": 6,
+      "pixels": [
+        "294",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ],
+      "mask": [
+        "209",
+        2
+      ]
+    },
+    "class_type": "VAEEncodeForInpaint",
+    "_meta": {
+      "title": "VAE Encode (for Inpainting)"
+    }
+  },
+  "226": {
+    "inputs": {
+      "images": [
+        "213",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "266": {
+    "inputs": {
+      "masks": [
+        "206",
+        0
+      ],
+      "original_images": [
+        "272",
+        0
+      ]
+    },
+    "class_type": "FilterZeroMasksAndCorrespondingImages",
+    "_meta": {
+      "title": "FilterZeroMasksAndCorrespondingImages"
+    }
+  },
+  "268": {
+    "inputs": {
+      "mask": [
+        "266",
+        0
+      ]
+    },
+    "class_type": "MaskToImage",
+    "_meta": {
+      "title": "Convert Mask to Image"
+    }
+  },
+  "269": {
+    "inputs": {
+      "images": [
+        "268",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "272": {
+    "inputs": {
+      "directory": [
+        "273",
+        0
+      ],
+      "image_load_cap": 0,
+      "start_index": 0
+    },
+    "class_type": "LoadImagesFromDir //Inspire",
+    "_meta": {
+      "title": "Load Image Batch From Dir (Inspire)"
+    }
+  },
+  "273": {
+    "inputs": {
+      "string": ""
+    },
+    "class_type": "Simple String",
+    "_meta": {
+      "title": "Path [Sys] [Imgs_In]"
+    }
+  },
+  "274": {
+    "inputs": {
+      "image": "Cammy_Style_0-NoBG_Face.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Style Reference Image [Var] [Imgs] [Order: 2]"
+    }
+  },
+  "275": {
+    "inputs": {
+      "value": 8
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Sample Steps [Var] [Order: 4]"
+    }
+  },
+  "276": {
+    "inputs": {
+      "value": 1.5
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Sampler CFG Value [Var] [Order: 3]"
+    }
+  },
+  "277": {
+    "inputs": {
+      "value": 0.5
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Sampler Denoise Value [Var] [Order: 5]"
+    }
+  },
+  "279": {
+    "inputs": {
+      "text": "(bad quality, worst quality:1.2), (interlocked fingers:1.2), ugly, bad anatomy, blurry, pixelated obscure, unnatural colors, poor lighting, dull, and unclear, cropped, low-res, low quality, artifacts, duplicate, morbid, mutilated, poorly drawn face, deformed, dehydrated, bad proportions",
+      "clip": [
+        "169",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode_Negative [Var] [Prompt_Negative] [Order: 1]"
+    }
+  },
+  "280": {
+    "inputs": {
+      "text": "Cammy white, street fighter, (embedding:charturnerv2:0.75), 1girl, solo, abs, red hat, blonde hair, blue eyes, green leotard, black background, red fingerless gloves, red boots, bare legs, pure black background, consistent daylight, minimum shadow",
+      "clip": [
+        "169",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode [Var] [Prompt_Positive] [Order: 0]"
+    }
+  },
+  "281": {
+    "inputs": {
+      "weight": 0.85,
+      "noise": 0.75,
+      "weight_type": "original",
+      "start_at": [
+        "286",
+        0
+      ],
+      "end_at": [
+        "287",
+        0
+      ],
+      "unfold_batch": [
+        "282",
+        0
+      ],
+      "ipadapter": [
+        "136",
+        0
+      ],
+      "clip_vision": [
+        "138",
+        0
+      ],
+      "image": [
+        "141",
+        0
+      ],
+      "model": [
+        "167",
+        0
+      ]
+    },
+    "class_type": "IPAdapterApply",
+    "_meta": {
+      "title": "Apply IPAdapter [Var] [Order: 13]"
+    }
+  },
+  "282": {
+    "inputs": {
+      "cmp": "a = b",
+      "a": [
+        "283",
+        0
+      ],
+      "b": [
+        "284",
+        0
+      ]
+    },
+    "class_type": "ImpactCompare",
+    "_meta": {
+      "title": "ImpactCompare"
+    }
+  },
+  "283": {
+    "inputs": {
+      "value": 0
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "INT Constant"
+    }
+  },
+  "284": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "INT Constant"
+    }
+  },
+  "286": {
+    "inputs": {
+      "value": 0
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Start At"
+    }
+  },
+  "287": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "End At"
+    }
+  },
+  "294": {
+    "inputs": {
+      "upscale_method": "bilinear",
+      "width": [
+        "295",
+        0
+      ],
+      "height": [
+        "296",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "209",
+        1
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "295": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Face Upscale Resolution Width [Var] [Order: 9]"
+    }
+  },
+  "296": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Face Upscale Resolution Height [Var] [Order: 10]"
+    }
+  }
+}

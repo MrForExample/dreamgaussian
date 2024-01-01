@@ -35,10 +35,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('path', type=str, help="path to image (png, jpeg, etc.)")
+    parser.add_argument('--save_path', default='', type=str, help="path to output images")
     parser.add_argument('--model', default='u2net', type=str, help="rembg model, see https://github.com/danielgatis/rembg#models")
     parser.add_argument('--size', default=256, type=int, help="output resolution")
-    parser.add_argument('--border_ratio', default=0.2, type=float, help="output border ratio")
-    parser.add_argument('--recenter', type=bool, default=True, help="recenter, potentially not helpful for multiview zero123")    
+    parser.add_argument('--border_ratio', default=0, type=float, help="output border ratio")
+    parser.add_argument('--recenter', type=bool, default=False, help="recenter, potentially not helpful for multiview zero123")    
     opt = parser.parse_args()
 
     session = rembg.new_session(model_name=opt.model)
@@ -46,10 +47,11 @@ if __name__ == '__main__':
     if os.path.isdir(opt.path):
         print(f'[INFO] processing directory {opt.path}...')
         files = glob.glob(f'{opt.path}/*')
-        out_dir = opt.path
+        out_dir = opt.path if opt.save_path == '' else opt.save_path
+            
     else: # isfile
         files = [opt.path]
-        out_dir = os.path.dirname(opt.path)
+        out_dir = os.path.dirname(opt.path) if opt.save_path == '' else opt.save_path
     
     for file in files:
 

@@ -1,0 +1,95 @@
+### Input
+# reference rgba images folder's name
+reference: "Images_enhanced"
+# input mesh for stage 2 (auto-search from stage 1 output path if None)
+mesh:
+# estimated elevation angle for input image 
+elevation: 0
+# camera azimuth angle of the first reference image
+init_angle: 0
+# reference image resolution
+ref_size_H: 1024
+ref_size_W: 1024
+# density thresh for mesh extraction
+density_thresh: 1
+# 
+persistent_folder: "BlenderAI3D"
+#
+persistent_inputs_folder: "Inputs"
+#
+persistent_meshes_folder: "Meshes"
+#
+persistent_data_folder: "Data"
+#
+persistent_outputs_folder: "Outputs"
+#
+mesh_name: "untitled.obj"
+#
+uv_data_name: "3d_uv_data.pkl"
+
+### Output
+outdir: logs
+mesh_format: obj
+save_path: save
+
+### Training
+# training iterations for 3DGS
+iters: 100000
+# weight for d-ssim loss
+lambda_ssim: 0.2
+# weight for using MSE to match the gaussians alpha value
+lambda_alpha: 3
+# weight for points offset from initial position penalty loss in Compactness-based Densification
+lambda_offset: 1
+# weight for alpha penalty loss in Compactness-based Densification
+lambda_offset_opacity: 1
+# whether to linearly anneal timestep
+anneal_timestep: True
+# training camera radius
+radius: 1.75
+# training camera fovy
+fovy: 49.1
+# checkpoint to load for 3DGS (should be a ply file)
+load:
+# prob to invert background color during training (0 = always black, 1 = always white)
+invert_bg_prob: 0.5
+
+### GUI
+gui: False
+force_cuda_rast: False
+# GUI resolution
+H: 800
+W: 800
+
+### Gaussian splatting
+num_pts: 5000
+sh_degree: 0
+position_lr_init: 0.001
+position_lr_final: 0.00002
+position_lr_delay_mult: 0.02
+position_lr_max_steps: 500
+feature_lr: 0.01
+opacity_lr: 0.05
+scaling_lr: 0.005
+rotation_lr: 0.005
+percent_dense: 0.01
+density_start_iter: 100
+density_end_iter: 100000
+densification_interval: 100
+opacity_reset_interval: 700
+densify_grad_threshold: 0.01
+# K nearest neighbors to search for each gaussian used in Compactness-based Densification
+K: 3
+# 
+save_3DGS_model_name: "3DGS_data.pkl"
+
+
+### Baking texture
+# Camera fov for render each pixel
+fovy_pixel_cam: 10
+# Camera distance to uv sampled points along its normal direction
+pixel_look_distance: 0.5
+# K nearest gaussians to search for each uv sampled points, used when bake the gaussian color onto uv texture
+K_bake: 2500
+#
+bake_texture_name: "baked_texture"

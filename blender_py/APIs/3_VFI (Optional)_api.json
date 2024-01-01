@@ -1,0 +1,66 @@
+{
+  "6": {
+    "inputs": {
+      "ckpt_name": "GMFSS_fortuna_union",
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 2,
+      "cache_in_fp16": true,
+      "frames": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "GMFSS Fortuna VFI",
+    "_meta": {
+      "title": "GMFSS Fortuna VFI [Var]"
+    }
+  },
+  "8": {
+    "inputs": {
+      "filename_prefix": "Cammy_NoBangs\\Images_VFI\\GMFSS",
+      "images": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image [Sys] [Imgs_Out]"
+    }
+  },
+  "9": {
+    "inputs": {
+      "ckpt_name": "film_net_fp32.pt",
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 2,
+      "cache_in_fp16": true
+    },
+    "class_type": "FILM VFI",
+    "_meta": {
+      "title": "FILM VFI"
+    }
+  },
+  "10": {
+    "inputs": {
+      "directory": [
+        "11",
+        0
+      ],
+      "image_load_cap": 0,
+      "start_index": 0
+    },
+    "class_type": "LoadImagesFromDir //Inspire",
+    "_meta": {
+      "title": "Load Image Batch From Dir (Inspire)"
+    }
+  },
+  "11": {
+    "inputs": {
+      "string": ""
+    },
+    "class_type": "Simple String",
+    "_meta": {
+      "title": "Path [Sys] [Imgs_In]"
+    }
+  }
+}

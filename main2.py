@@ -4,6 +4,7 @@ import time
 import tqdm
 import numpy as np
 import dearpygui.dearpygui as dpg
+from PIL import Image
 
 import torch
 import torch.nn.functional as F
@@ -171,6 +172,14 @@ class GUI:
                 image = out["image"] # [H, W, 3] in [0, 1]
                 valid_mask = ((out["alpha"] > 0) & (out["viewcos"] > 0.5)).detach()
                 loss = loss + F.mse_loss(image * valid_mask, self.input_img_torch_channel_last * valid_mask)
+                
+                self.save_test_images(image, "./logs/FrontRender")
+                
+                test_pose = orbit_camera(self.opt.elevation, 48, self.opt.radius)
+                self.test_cam = (test_pose, self.cam.perspective)
+                image = self.renderer.render(*self.test_cam, self.opt.ref_size, self.opt.ref_size, ssaa=ssaa)["image"] # [H, W, 3] in [0, 1]
+                self.save_test_images(image, "./logs/FrontRender", "test_angle_48")
+                
 
             ### novel view (manual batch)
             render_resolution = 512
@@ -229,6 +238,9 @@ class GUI:
                     refined_images = self.guidance_sd.refine(images, poses, strength=strength).float()
                     refined_images = F.interpolate(refined_images, (render_resolution, render_resolution), mode="bilinear", align_corners=False)
                     loss = loss + self.opt.lambda_sd * F.mse_loss(images, refined_images)
+                    
+                    for i in range(refined_images.shape[0]):
+                        self.save_test_images(refined_images[i].permute(1,2,0), "./logs/MVRefine", str(i))
                 else:
                     # loss = loss + self.opt.lambda_sd * self.guidance_sd.train_step(images, step_ratio)
                     refined_images = self.guidance_sd.refine(images, strength=strength).float()
@@ -266,6 +278,12 @@ class GUI:
         # train_steps = min(16, max(4, int(16 * 500 / full_t)))
         # if train_steps > self.train_steps * 1.2 or train_steps < self.train_steps * 0.8:
         #     self.train_steps = train_steps
+
+    def save_test_images(self, image, save_path, prefix=""):
+        print(f"[SAVE Image] Shape: {image.shape}")
+        img = image.contiguous().clamp(0, 1).detach().cpu().numpy() * 255
+        img = Image.fromarray(np.uint8(img), 'RGB')
+        img.save(f"{save_path}/img_{prefix}.png")
 
     @torch.no_grad()
     def test_step(self):
@@ -338,7 +356,7 @@ class GUI:
         file_prompt = file.replace("_rgba.png", "_caption.txt")
         if os.path.exists(file_prompt):
             print(f'[INFO] load prompt from {file_prompt}...')
-            with open(file_prompt, "r") as f:
+            with open(file_prompt, "r", errors='ignore') as f:
                 self.prompt = f.read().strip()
     
     def save_model(self):

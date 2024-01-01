@@ -1,0 +1,761 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "aingdiffusion_v113.safetensors",
+      "beta_schedule": "sqrt_linear (AnimateDiff)"
+    },
+    "class_type": "CheckpointLoaderSimpleWithNoiseSelect",
+    "_meta": {
+      "title": "Load Checkpoint w/ Noise Select 🎭🅐🅓 [Var] [Order: 7]"
+    }
+  },
+  "2": {
+    "inputs": {
+      "vae_name": "anythingKlF8Anime2VaeFtMse840000_klF8Anime2.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE [Var] [Order: 8]"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "(bad quality, worst quality:1.2), (interlocked fingers:1.2), ugly, bad anatomy, blurry, pixelated obscure, unnatural colors, poor lighting, dull, and unclear, cropped, low-res, low quality, artifacts, duplicate, morbid, mutilated, poorly drawn face, deformed, dehydrated, bad proportions",
+      "clip": [
+        "169",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode_Negative [Var] [Prompt_Negative] [Order: 1]"
+    }
+  },
+  "10": {
+    "inputs": {
+      "samples": [
+        "165",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "12": {
+    "inputs": {
+      "filename_prefix": "Cammy_NoBangs\\Images_mm_v3\\image",
+      "images": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Images [Sys] [Imgs_Out]"
+    }
+  },
+  "56": {
+    "inputs": {
+      "pixels": [
+        "179",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "93": {
+    "inputs": {
+      "model_name": "v3_sd15_mm.ckpt",
+      "beta_schedule": "sqrt_linear (AnimateDiff)",
+      "motion_scale": 1,
+      "apply_v2_models_properly": false,
+      "model": [
+        "137",
+        0
+      ],
+      "context_options": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "ADE_AnimateDiffLoaderWithContext",
+    "_meta": {
+      "title": "AnimateDiff Loader 🎭🅐🅓"
+    }
+  },
+  "94": {
+    "inputs": {
+      "context_length": 16,
+      "context_stride": 1,
+      "context_overlap": 4,
+      "context_schedule": "uniform",
+      "closed_loop": false
+    },
+    "class_type": "ADE_AnimateDiffUniformContextOptions",
+    "_meta": {
+      "title": "Uniform Context Options 🎭🅐🅓"
+    }
+  },
+  "103": {
+    "inputs": {
+      "frame_rate": 12,
+      "loop_count": 0,
+      "filename_prefix": "Cammy_NoBangs\\Videos_mm_v3\\video",
+      "format": "video/h265-mp4",
+      "pix_fmt": "yuv420p10le",
+      "crf": 20,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "116": {
+    "inputs": {
+      "images": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "118": {
+    "inputs": {
+      "text": "Cammy white, street fighter, (embedding:charturnerv2:0.75), 1girl, solo, abs, red hat, blonde hair, blue eyes, green leotard, black background, red fingerless gloves, red boots, bare legs, pure black background, consistent daylight, minimum shadow",
+      "clip": [
+        "169",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode [Var] [Prompt_Positive] [Order: 0]"
+    }
+  },
+  "128": {
+    "inputs": {
+      "low_threshold": 100,
+      "high_threshold": 200,
+      "resolution": 512,
+      "image": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "CannyEdgePreprocessor",
+    "_meta": {
+      "title": "Canny Edge"
+    }
+  },
+  "129": {
+    "inputs": {
+      "images": [
+        "182",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "132": {
+    "inputs": {
+      "control_net_name": "control_v11p_sd15_canny.pth"
+    },
+    "class_type": "ControlNetLoaderAdvanced",
+    "_meta": {
+      "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝"
+    }
+  },
+  "136": {
+    "inputs": {
+      "ipadapter_file": "ip-adapter-plus_sd15.safetensors"
+    },
+    "class_type": "IPAdapterModelLoader",
+    "_meta": {
+      "title": "Load IPAdapter Model"
+    }
+  },
+  "137": {
+    "inputs": {
+      "weight": 0.85,
+      "noise": 0.75,
+      "weight_type": "original",
+      "start_at": [
+        "221",
+        0
+      ],
+      "end_at": [
+        "222",
+        0
+      ],
+      "unfold_batch": [
+        "264",
+        0
+      ],
+      "ipadapter": [
+        "136",
+        0
+      ],
+      "clip_vision": [
+        "138",
+        0
+      ],
+      "image": [
+        "141",
+        0
+      ],
+      "model": [
+        "167",
+        0
+      ]
+    },
+    "class_type": "IPAdapterApply",
+    "_meta": {
+      "title": "Apply IPAdapter [Var] [Order: 14]"
+    }
+  },
+  "138": {
+    "inputs": {
+      "clip_name": "ip-adapter-plus_sd15_Clip.safetensors"
+    },
+    "class_type": "CLIPVisionLoader",
+    "_meta": {
+      "title": "Load CLIP Vision"
+    }
+  },
+  "140": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "187",
+        0
+      ],
+      "height": [
+        "188",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "269",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "141": {
+    "inputs": {
+      "interpolation": "LANCZOS",
+      "crop_position": "center",
+      "sharpening": 0,
+      "image": [
+        "140",
+        0
+      ]
+    },
+    "class_type": "PrepImageForClipVision",
+    "_meta": {
+      "title": "Prepare Image For Clip Vision"
+    }
+  },
+  "157": {
+    "inputs": {
+      "control_net_name": "control_v1p_sd15_brightness.safetensors"
+    },
+    "class_type": "ControlNetLoaderAdvanced",
+    "_meta": {
+      "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝"
+    }
+  },
+  "159": {
+    "inputs": {
+      "strength": 0.75,
+      "start_percent": [
+        "221",
+        0
+      ],
+      "end_percent": [
+        "222",
+        0
+      ],
+      "positive": [
+        "164",
+        0
+      ],
+      "negative": [
+        "164",
+        1
+      ],
+      "control_net": [
+        "157",
+        0
+      ],
+      "image": [
+        "180",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced) [Var] [Order: 13] [Brightness]"
+    }
+  },
+  "162": {
+    "inputs": {
+      "black_level": 0,
+      "mid_level": 165,
+      "white_level": 255,
+      "image": [
+        "192",
+        0
+      ]
+    },
+    "class_type": "Image Levels Adjustment",
+    "_meta": {
+      "title": "Image Brightness Levels Adjustment"
+    }
+  },
+  "163": {
+    "inputs": {
+      "images": [
+        "180",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "164": {
+    "inputs": {
+      "strength": 0.75,
+      "start_percent": [
+        "221",
+        0
+      ],
+      "end_percent": [
+        "222",
+        0
+      ],
+      "positive": [
+        "118",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "control_net": [
+        "132",
+        0
+      ],
+      "image": [
+        "182",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced) [Var] [Order: 12] [Canny]"
+    }
+  },
+  "165": {
+    "inputs": {
+      "seed": 999999999,
+      "steps": [
+        "260",
+        0
+      ],
+      "cfg": [
+        "261",
+        0
+      ],
+      "sampler_name": "lcm",
+      "scheduler": "sgm_uniform",
+      "denoise": [
+        "262",
+        0
+      ],
+      "model": [
+        "175",
+        0
+      ],
+      "positive": [
+        "159",
+        0
+      ],
+      "negative": [
+        "159",
+        1
+      ],
+      "latent_image": [
+        "178",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "166": {
+    "inputs": {
+      "lora_name": "lcm-lora-sdv1-5.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "167": {
+    "inputs": {
+      "sampling": "lcm",
+      "zsnr": false,
+      "model": [
+        "166",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingDiscrete",
+    "_meta": {
+      "title": "ModelSamplingDiscrete"
+    }
+  },
+  "169": {
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": [
+        "166",
+        1
+      ]
+    },
+    "class_type": "CLIPSetLastLayer",
+    "_meta": {
+      "title": "CLIP Set Last Layer [Var]"
+    }
+  },
+  "171": {
+    "inputs": {
+      "b1": 1.3,
+      "b2": 1.4000000000000001,
+      "s1": 0.9,
+      "s2": 0.2,
+      "model": [
+        "93",
+        0
+      ]
+    },
+    "class_type": "FreeU_V2",
+    "_meta": {
+      "title": "FreeU_V2"
+    }
+  },
+  "175": {
+    "inputs": {
+      "mimic_scale": 7,
+      "threshold_percentile": 1,
+      "mimic_mode": "Constant",
+      "mimic_scale_min": 0,
+      "cfg_mode": "Constant",
+      "cfg_scale_min": 0,
+      "sched_val": 1,
+      "separate_feature_channels": "enable",
+      "scaling_startpoint": "MEAN",
+      "variability_measure": "AD",
+      "interpolate_phi": 1,
+      "model": [
+        "171",
+        0
+      ]
+    },
+    "class_type": "DynamicThresholdingFull",
+    "_meta": {
+      "title": "DynamicThresholdingFull"
+    }
+  },
+  "178": {
+    "inputs": {
+      "version": "SD 1.x",
+      "upscale": [
+        "271",
+        0
+      ],
+      "latent": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "NNLatentUpscale",
+    "_meta": {
+      "title": "NNLatentUpscale"
+    }
+  },
+  "179": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "187",
+        0
+      ],
+      "height": [
+        "188",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "180": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "187",
+        0
+      ],
+      "height": [
+        "188",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "162",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "182": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "187",
+        0
+      ],
+      "height": [
+        "188",
+        0
+      ],
+      "crop": "disabled",
+      "image": [
+        "128",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "187": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Image Upscale Resolution Width [Var] [Order: 9]"
+    }
+  },
+  "188": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Image Upscale Resolution Height [Var] [Order: 10]"
+    }
+  },
+  "192": {
+    "inputs": {
+      "images": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "Images to Linear",
+    "_meta": {
+      "title": "Images to Linear"
+    }
+  },
+  "194": {
+    "inputs": {
+      "images": [
+        "162",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "206": {
+    "inputs": {
+      "directory": [
+        "207",
+        0
+      ],
+      "image_load_cap": 0,
+      "start_index": 0
+    },
+    "class_type": "LoadImagesFromDir //Inspire",
+    "_meta": {
+      "title": "Load Image Batch From Dir (Inspire)"
+    }
+  },
+  "207": {
+    "inputs": {
+      "string": ""
+    },
+    "class_type": "Simple String",
+    "_meta": {
+      "title": "Path [Sys] [Imgs_In]"
+    }
+  },
+  "221": {
+    "inputs": {
+      "value": 0
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Start At"
+    }
+  },
+  "222": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "End At"
+    }
+  },
+  "260": {
+    "inputs": {
+      "value": 4
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Sample Steps [Var] [Order: 4]"
+    }
+  },
+  "261": {
+    "inputs": {
+      "value": 5
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Sampler CFG Value [Var] [Order: 3]"
+    }
+  },
+  "262": {
+    "inputs": {
+      "value": 0.3
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Sampler Denoise Value [Var] [Order: 5]"
+    }
+  },
+  "264": {
+    "inputs": {
+      "cmp": "a = b",
+      "a": [
+        "265",
+        0
+      ],
+      "b": [
+        "266",
+        0
+      ]
+    },
+    "class_type": "ImpactCompare",
+    "_meta": {
+      "title": "ImpactCompare"
+    }
+  },
+  "265": {
+    "inputs": {
+      "value": 0
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "INT Constant"
+    }
+  },
+  "266": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "INT Constant"
+    }
+  },
+  "269": {
+    "inputs": {
+      "image": "Cammy_Style_0-NoBG.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Style Reference Image [Var] [Imgs] [Order: 2]"
+    }
+  },
+  "271": {
+    "inputs": {
+      "value": 1.25
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "NN Latent Upscale Value [Var] [Order: 11]"
+    }
+  }
+}
