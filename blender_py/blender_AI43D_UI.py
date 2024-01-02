@@ -53,7 +53,12 @@ SYNC_TYPES_DESCRIPTION = [
 ]
 
 COMFYUI_INPUT_FOLDER_RELATIVE_PATH = "ComfyUI/input/"
-STYLE_IMG_FOLDER_NAME = "style/"
+COMFYUI_OUTPUT_FOLDER_RELATIVE_PATH = "ComfyUI/output/"
+STYLE_IMG_FOLDER_NAME = "BlenderAI43D_Style/"
+RENDERED_INPUT_IMGS_FOLDER_NAME = "BlenderAI43D_Inputs/"
+GENERATED_IMGS_ROOT_FOLDER_NAME = "BlenderAI43D_Generated/"
+GENERATED_IMGS_STAGE_FOLDER_PREFIX = "Stage_Output_"
+GENERATED_IMG_PREFIX = "image"
 
 
 TYPE_2_PROP = {str: StringProperty, int: IntProperty, float: FloatProperty, bool: BoolProperty}
@@ -91,13 +96,10 @@ def set_parent_node_to_sync(self, context, child_node_var):
 class ComfyUIAPIHandler:
     
     def __init__(self, comfyUI_root_path, workflow_api_folder_path):
-        self.comfyUI_root_path = comfyUI_root_path
-        self.input_folder_path = os.path.join(self.comfyUI_root_path, COMFYUI_INPUT_FOLDER_RELATIVE_PATH)
-        self.style_imgs_folder_path = os.path.join(self.input_folder_path, STYLE_IMG_FOLDER_NAME)
-        os.makedirs(self.style_imgs_folder_path, exist_ok=True)
         self.workflow_api_folder_path = workflow_api_folder_path
         self.load_API_files()
         self.parse_all_API_data()
+        self.set_system_variables(comfyUI_root_path)
 
     def load_API_files(self):
         self.all_api_data = {}  # {API File Name: API Json Data, }
@@ -106,9 +108,114 @@ class ComfyUIAPIHandler:
                 with open(os.path.join(self.workflow_api_folder_path, filename), 'rb') as file:
                     self.all_api_data[filename] = json.load(file)
                     
+    def parse_all_API_data(self):
+        # Get all variable nodes from api data
+        first_node_vars = {}
+        last_node_vars = {}
+        self.all_api_var = {}  # {API File Name: {Node Title: NodeVarWrapper}, }
+        self.all_api_sys = {} # {API File Name: {Node Title: NodeVarWrapper}, }
+        for filename in AI_TEXTURING_WORKFLOW_API_NAMES:
+            tmp_first_node_vars = {}
+            tmp_last_node_vars = {}
+            api_var = {}
+            api_sys = {} 
+            
+            api_data = self.all_api_data[filename]
+            for node_id in api_data:
+                node_data = api_data[node_id]
+                node_title = node_data['_meta']['title']
+                if '[Var]' in node_title:
+                    
+                    node_var = ComfyUIAPIHandler.NodeVarWrapper(filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
+                    
+                    if node_var.node_class_name in first_node_vars:
+                        first_node_to_sync = first_node_vars[node_var.node_class_name]
+                        last_node_to_sync = last_node_vars[node_var.node_class_name]
+                    else:
+                        tmp_first_node_vars[node_var.node_class_name] = node_var
+                        first_node_to_sync = last_node_to_sync = None
+                        
+                    node_var.set_nodes_to_sync(first_node_to_sync, last_node_to_sync)
+                    
+                    tmp_last_node_vars[node_var.node_class_name] = node_var
+                    
+                    api_var[node_title] = node_var
+                    
+                elif '[Sys]' in node_title:
+                    node_sys = ComfyUIAPIHandler.NodeSysWrapper(filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
+                    
+                    api_sys[node_title] = node_sys
+                    
+            self.all_api_var[filename] = api_var
+            self.all_api_sys[filename] = api_sys
+            first_node_vars.update(tmp_first_node_vars)
+            last_node_vars.update(tmp_last_node_vars)
+        
+        #print(f"self.all_api_var: {self.all_api_var}")
+        
+        # Sort the variable nodes
+        self.all_node_var_sorted = {} # {API File Name: [Node Title]}
+        for filename in self.all_api_var:
+            api_var = self.all_api_var[filename]
+    
+            self.all_node_var_sorted[filename] = sorted(api_var.keys(), key=lambda node_title:api_var[node_title].order)
+            
+        #print(f"self.all_node_var_sorted: {self.all_node_var_sorted}")
+                    
+    def set_system_variables(self, comfyUI_root_path):
+        # servers, input, output, files root folder
+        self.comfyUI_root_path = comfyUI_root_path
+        self.input_folder_path = os.path.join(self.comfyUI_root_path, COMFYUI_INPUT_FOLDER_RELATIVE_PATH)
+        self.output_folder_path = os.path.join(self.comfyUI_root_path, COMFYUI_OUTPUT_FOLDER_RELATIVE_PATH)
+        
+        # style images input folder
+        self.style_imgs_folder_path = os.path.join(self.input_folder_path, STYLE_IMG_FOLDER_NAME)
+        os.makedirs(self.style_imgs_folder_path, exist_ok=True)
+        
+        # images inputs and outputs folder
+        self.rendered_input_imgs_folder_path = os.path.join(self.input_folder_path, RENDERED_INPUT_IMGS_FOLDER_NAME)
+        self.abs_stages_output_folders_path = []
+        
+        last_output_folder_path = self.rendered_input_imgs_folder_path
+        os.makedirs(last_output_folder_path, exist_ok=True)
+        for i, filename in enumerate(AI_TEXTURING_WORKFLOW_API_NAMES):
+            api_data = self.all_api_data[filename]
+            api_sys = self.all_api_sys[filename]
+            
+            # set input images folder first, set it as last output folder's path
+            for node_title in api_sys:
+                node_sys = api_sys[node_title]
+                node_data_params = api_data[node_sys.id]['inputs']
+                
+                if node_sys.node_type == ComfyUIAPIHandler.NodeType.IMGS_IN:
+                    node_data_params[node_sys.image_param_name] = last_output_folder_path
+            
+            # then set the output images path
+            for node_title in api_sys:
+                node_sys = api_sys[node_title]
+                node_data_params = api_data[node_sys.id]['inputs']
+                
+                if node_sys.node_type == ComfyUIAPIHandler.NodeType.IMGS_OUT:
+                    # set output path parameters in api data
+                    stage_output_folder_rel_path = os.path.join(GENERATED_IMGS_ROOT_FOLDER_NAME, GENERATED_IMGS_STAGE_FOLDER_PREFIX + str(i))
+                    node_data_params[node_sys.image_param_name] = os.path.join(stage_output_folder_rel_path, GENERATED_IMG_PREFIX)
+                    
+                    # update last output folder's path, and create the output folder if they don't exist
+                    stage_output_folder_abs_path = os.path.join(self.output_folder_path, stage_output_folder_rel_path)
+                    self.abs_stages_output_folders_path.append(stage_output_folder_abs_path)
+                    last_output_folder_path = stage_output_folder_abs_path
+                    os.makedirs(last_output_folder_path, exist_ok=True)
+            
+        print(f"self.all_api_data: {self.all_api_data}")
+                    
     class NodeType(enum.Enum):
+        # Var types
         PARAMS = 0
         IMGS = 1
+        
+        # Sys types
+        IMGS_IN = 2
+        IMGS_OUT = 3
                     
     class NodeVarWrapper:
         def __init__(self, api_filename, node_title, node_id, node_class_type, node_inputs):
@@ -212,52 +319,24 @@ class ComfyUIAPIHandler:
                 set_parent_node_to_sync(scene, bpy.context, self)
             else:
                 self.nodes_to_sync = self.node_sync_enum_prop_name = None
-    
-    def parse_all_API_data(self):
-        # Get all variable nodes from api data
-        first_node_vars = {}
-        last_node_vars = {}
-        self.all_api_var = {}  # {API File Name: {Node Title: NodeVarWrapper}, }
-        for filename in AI_TEXTURING_WORKFLOW_API_NAMES:
-            tmp_first_node_vars = {}
-            tmp_last_node_vars = {}
-            api_var = {}
-            
-            api_data = self.all_api_data[filename]
-            for node_id in api_data:
-                node_data = api_data[node_id]
-                node_title = node_data['_meta']['title']
-                if '[Var]' in node_title:
-                    
-                    node_var = ComfyUIAPIHandler.NodeVarWrapper(filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
-                    
-                    if node_var.node_class_name in first_node_vars:
-                        first_node_to_sync = first_node_vars[node_var.node_class_name]
-                        last_node_to_sync = last_node_vars[node_var.node_class_name]
-                    else:
-                        tmp_first_node_vars[node_var.node_class_name] = node_var
-                        first_node_to_sync = last_node_to_sync = None
-                        
-                    node_var.set_nodes_to_sync(first_node_to_sync, last_node_to_sync)
-                    
-                    tmp_last_node_vars[node_var.node_class_name] = node_var
-                    
-                    api_var[node_title] = node_var
-                    
-            self.all_api_var[filename] = api_var
-            first_node_vars.update(tmp_first_node_vars)
-            last_node_vars.update(tmp_last_node_vars)
+                
+    class NodeSysWrapper:
         
-        #print(f"self.all_api_var: {self.all_api_var}")
-        
-        # Sort the variable nodes
-        self.all_node_var_sorted = {} # {API File Name: [Node Title]}
-        for filename in self.all_api_var:
-            api_var = self.all_api_var[filename]
-    
-            self.all_node_var_sorted[filename] = sorted(api_var.keys(), key=lambda node_title:api_var[node_title].order)
+        def __init__(self, api_filename, node_title, node_id, node_class_type, node_inputs):
+            self.api_filename = api_filename
+            # remove the tag [Var] & [Order: int] and white space before them, also remove the white space at beginning or end of node title
+            self.sys_name = re.sub(r"\A\s*|\s*\[Sys\]|\s*\Z", "", node_title)
+            self.id = node_id
+            self.class_type = node_class_type
             
-        #print(f"self.all_node_var_sorted: {self.all_node_var_sorted}")
+            if '[Imgs_In]' in node_title and self.class_type == "Simple String":
+                self.node_type = ComfyUIAPIHandler.NodeType.IMGS_IN
+                self.image_param_name = 'string'
+            elif '[Imgs_Out]' in node_title and self.class_type == "SaveImage":
+                self.node_type = ComfyUIAPIHandler.NodeType.IMGS_OUT
+                self.image_param_name = 'filename_prefix'
+            else:
+                self.node_type = None
             
     def sync_workflow_api_data(self, filename):
         # synchronize all api data from UI properties should be called before send api data to ComfyUI servers
@@ -286,6 +365,13 @@ class ComfyUIAPIHandler:
                     for param_name in node_var_params:
                         if hasattr(scene, node_var_params[param_name]):
                             node_data_params[param_name] = getattr(scene, node_var_params[param_name])
+              
+            # Clean all the files inside output folders, make room for the new outputs
+            for stage_output_folder_abs_path in self.abs_stages_output_folders_path:
+                for filename in os.listdir(stage_output_folder_abs_path):
+                    file_abs_path = os.path.join(stage_output_folder_abs_path, filename)
+                    if os.path.isfile(file_abs_path):
+                        os.remove(file_abs_path)
                     
         print(f"self.all_api_data: {self.all_api_data}")
 
