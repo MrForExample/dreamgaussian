@@ -22,7 +22,7 @@
     "inputs": {
       "filename_prefix": "Cammy_NoBangs\\Images_FaceDetailed_0\\image",
       "images": [
-        "210",
+        "299",
         0
       ]
     },
@@ -76,7 +76,7 @@
       "pingpong": false,
       "save_output": true,
       "images": [
-        "210",
+        "299",
         0
       ]
     },
@@ -692,7 +692,7 @@
   },
   "273": {
     "inputs": {
-      "string": ""
+      "string": "C:\\Users\\reall\\Softwares\\ComfyUI_windows_portable\\ComfyUI\\output\\BlenderAI43D_Generated\\Stage_Output_0"
     },
     "class_type": "Simple String",
     "_meta": {
@@ -892,6 +892,26 @@
     "class_type": "INTConstant",
     "_meta": {
       "title": "Face Upscale Resolution Height [Var] [Order: 10]"
+    }
+  },
+  "299": {
+    "inputs": {
+      "images": [
+        "210",
+        0
+      ],
+      "images_to_insert": [
+        "266",
+        2
+      ],
+      "insert_indexes": [
+        "266",
+        3
+      ]
+    },
+    "class_type": "InsertImageBatchByIndexes",
+    "_meta": {
+      "title": "InsertImageBatchByIndexes"
     }
   }
 }

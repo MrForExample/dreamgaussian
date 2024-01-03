@@ -9,13 +9,24 @@ bl_info = {
 }
 
 
-import bpy
+import sys
+import pip
+try:
+    import websocket #NOTE: websocket-client (https://github.com/websocket-client/websocket-client)
+except:
+    pip.main(['install', 'websocket-client', '--target', (sys.exec_prefix) + '\\lib\\site-packages'])
+    import websocket
+    
+import uuid
 import json
+from urllib import request, parse
 import os
 import re
 import hashlib
 import enum
+import threading
 
+import bpy
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, EnumProperty
 from bpy.types import Operator, Panel
 
@@ -37,6 +48,9 @@ all_imgs_names = (
     REF_STYLE_IMG_NAME,
     REF_FACE_STYLE_IMG_NAME,
 )
+
+SERVER_ADDRESS = "127.0.0.1:8188"
+CLIENT_ID = str(uuid.uuid4())
 
 AI_TEXTURING_WORKFLOW_API_NAMES = (
     "0_Multi-View_Images_Generation_api.json",
@@ -100,6 +114,12 @@ class ComfyUIAPIHandler:
         self.load_API_files()
         self.parse_all_API_data()
         self.set_system_variables(comfyUI_root_path)
+        
+        self.ws = websocket.WebSocket()
+        self.ws_connect_addr = f"ws://{SERVER_ADDRESS}/ws?clientId={CLIENT_ID}"
+        self.prompt_server_addr = f"http://{SERVER_ADDRESS}/prompt"
+        self.cancel_prompt_addr = f"http://{SERVER_ADDRESS}/interrupt"
+        self.is_prompt_running = False
 
     def load_API_files(self):
         self.all_api_data = {}  # {API File Name: API Json Data, }
@@ -114,19 +134,19 @@ class ComfyUIAPIHandler:
         last_node_vars = {}
         self.all_api_var = {}  # {API File Name: {Node Title: NodeVarWrapper}, }
         self.all_api_sys = {} # {API File Name: {Node Title: NodeVarWrapper}, }
-        for filename in AI_TEXTURING_WORKFLOW_API_NAMES:
+        for api_filename in AI_TEXTURING_WORKFLOW_API_NAMES:
             tmp_first_node_vars = {}
             tmp_last_node_vars = {}
             api_var = {}
             api_sys = {} 
             
-            api_data = self.all_api_data[filename]
+            api_data = self.all_api_data[api_filename]
             for node_id in api_data:
                 node_data = api_data[node_id]
                 node_title = node_data['_meta']['title']
                 if '[Var]' in node_title:
                     
-                    node_var = ComfyUIAPIHandler.NodeVarWrapper(filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
+                    node_var = ComfyUIAPIHandler.NodeVarWrapper(api_filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
                     
                     if node_var.node_class_name in first_node_vars:
                         first_node_to_sync = first_node_vars[node_var.node_class_name]
@@ -142,12 +162,12 @@ class ComfyUIAPIHandler:
                     api_var[node_title] = node_var
                     
                 elif '[Sys]' in node_title:
-                    node_sys = ComfyUIAPIHandler.NodeSysWrapper(filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
+                    node_sys = ComfyUIAPIHandler.NodeSysWrapper(api_filename, node_title, node_id, node_data['class_type'], node_data['inputs'])
                     
                     api_sys[node_title] = node_sys
                     
-            self.all_api_var[filename] = api_var
-            self.all_api_sys[filename] = api_sys
+            self.all_api_var[api_filename] = api_var
+            self.all_api_sys[api_filename] = api_sys
             first_node_vars.update(tmp_first_node_vars)
             last_node_vars.update(tmp_last_node_vars)
         
@@ -155,10 +175,10 @@ class ComfyUIAPIHandler:
         
         # Sort the variable nodes
         self.all_node_var_sorted = {} # {API File Name: [Node Title]}
-        for filename in self.all_api_var:
-            api_var = self.all_api_var[filename]
+        for api_filename in self.all_api_var:
+            api_var = self.all_api_var[api_filename]
     
-            self.all_node_var_sorted[filename] = sorted(api_var.keys(), key=lambda node_title:api_var[node_title].order)
+            self.all_node_var_sorted[api_filename] = sorted(api_var.keys(), key=lambda node_title:api_var[node_title].order)
             
         #print(f"self.all_node_var_sorted: {self.all_node_var_sorted}")
                     
@@ -178,9 +198,9 @@ class ComfyUIAPIHandler:
         
         last_output_folder_path = self.rendered_input_imgs_folder_path
         os.makedirs(last_output_folder_path, exist_ok=True)
-        for i, filename in enumerate(AI_TEXTURING_WORKFLOW_API_NAMES):
-            api_data = self.all_api_data[filename]
-            api_sys = self.all_api_sys[filename]
+        for i, api_filename in enumerate(AI_TEXTURING_WORKFLOW_API_NAMES):
+            api_data = self.all_api_data[api_filename]
+            api_sys = self.all_api_sys[api_filename]
             
             # set input images folder first, set it as last output folder's path
             for node_title in api_sys:
@@ -206,7 +226,7 @@ class ComfyUIAPIHandler:
                     last_output_folder_path = stage_output_folder_abs_path
                     os.makedirs(last_output_folder_path, exist_ok=True)
             
-        print(f"self.all_api_data: {self.all_api_data}")
+        #print(f"self.all_api_data: {self.all_api_data}")
                     
     class NodeType(enum.Enum):
         # Var types
@@ -338,11 +358,12 @@ class ComfyUIAPIHandler:
             else:
                 self.node_type = None
             
-    def sync_workflow_api_data(self, filename):
+    def sync_workflow_api_data(self, api_filename):
         # synchronize all api data from UI properties should be called before send api data to ComfyUI servers
-        if filename in self.all_api_var:
-            api_var = self.all_api_var[filename]
-            api_data = self.all_api_data[filename]
+        api_data = None
+        if api_filename in self.all_api_var:
+            api_var = self.all_api_var[api_filename]
+            api_data = self.all_api_data[api_filename]
             
             scene = bpy.context.scene
             
@@ -366,16 +387,64 @@ class ComfyUIAPIHandler:
                         if hasattr(scene, node_var_params[param_name]):
                             node_data_params[param_name] = getattr(scene, node_var_params[param_name])
               
-            # Clean all the files inside output folders, make room for the new outputs
-            for stage_output_folder_abs_path in self.abs_stages_output_folders_path:
-                for filename in os.listdir(stage_output_folder_abs_path):
-                    file_abs_path = os.path.join(stage_output_folder_abs_path, filename)
-                    if os.path.isfile(file_abs_path):
-                        os.remove(file_abs_path)
+            # Clean all the files inside output folder that will be use soon, make room for the new outputs
+            stage_output_folder_abs_path = self.abs_stages_output_folders_path[AI_TEXTURING_WORKFLOW_API_NAMES.index(api_filename)]
+            for filename in os.listdir(stage_output_folder_abs_path):
+                file_abs_path = os.path.join(stage_output_folder_abs_path, filename)
+                if os.path.isfile(file_abs_path):
+                    os.remove(file_abs_path)
                     
-        print(f"self.all_api_data: {self.all_api_data}")
+        return api_data
+        #print(f"self.all_api_data: {self.all_api_data}")
 
-             
+    def queue_prompt(self, prompt):
+        p = {"prompt": prompt, "client_id": CLIENT_ID}
+        data = json.dumps(p).encode('utf-8')
+        req =  request.Request(self.prompt_server_addr, data=data)
+        return json.loads(request.urlopen(req).read())
+    
+    def cancel_prompt(self):
+        # create the POST request
+        req_headers = {'Content-Type': 'application/json'}    
+        interrupt_request = request.Request(self.cancel_prompt_addr, headers=req_headers, method='POST')
+
+        # send request and get the response
+        with request.urlopen(interrupt_request) as response:
+            return response
+    
+    def run_comfyUI_client(self, prompt_id):
+        while True:
+            out = self.ws.recv()
+            if isinstance(out, str):
+                message = json.loads(out)
+                if message['type'] == 'executing':
+                    data = message['data']
+                    if data['node'] is None and data['prompt_id'] == prompt_id:
+                        self.is_prompt_running = False
+                        break #Execution is done
+            else:
+                continue #previews are binary data
+    
+    def prompt_comfyUI_servers(self, api_filename):
+        if not self.ws.connected:
+            try:
+                self.ws.connect(self.ws_connect_addr)
+            except:
+                print(f"[ERROR] Cannot connect to ComfyUI Servers at {self.ws_connect_addr}, check if ComfyUI is started or if your firewall is blocking this connection")
+                
+        if self.ws.connected:
+            if self.is_prompt_running:
+                self.cancel_prompt()
+                self.ws_thread.join()
+            
+            prompt = self.sync_workflow_api_data(api_filename)
+            prompt_id = self.queue_prompt(prompt)['prompt_id']
+            self.ws_thread = threading.Thread(target=self.run_comfyUI_client, args=(prompt_id,))
+            self.ws_thread.start()
+            
+            self.is_prompt_running = True
+            #self.run_comfyUI_client(prompt_id)
+
 def force_redraw():
     """
         A Blender panel is redrawn every time the panel needs to be updated, 
@@ -414,10 +483,10 @@ class VIEW3D_OT_CallComfyUIAPI(Operator):
     bl_idname = "import_func.api"
     bl_label = "Handle ComfyUI's API"
     
-    api_fliename: StringProperty(name="Workflow API File's Name")
+    api_filename: StringProperty(name="Workflow API File's Name")
     
     def execute(self, context):
-        comfyUIAPIHandler.sync_workflow_api_data(self.api_fliename)
+        comfyUIAPIHandler.prompt_comfyUI_servers(self.api_filename)
         return {'FINISHED'}
 
 class TextImg2TexturePanel:
@@ -507,7 +576,7 @@ class VIEW3D_PT_MVImagesGeneration(WorkflowAPIUILoader):
         row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
         row = layout.row()
         op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Generate")
-        op.api_fliename = self.api_filename
+        op.api_filename = self.api_filename
     
 class VIEW3D_PT_FaceDetailer(WorkflowAPIUILoader):
     bl_label = "Step 1.5 (Optional): Face Detailer"
@@ -524,7 +593,7 @@ class VIEW3D_PT_FaceDetailer(WorkflowAPIUILoader):
         row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
         row = layout.row()
         op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Face Detailing All")
-        op.api_fliename = self.api_filename
+        op.api_filename = self.api_filename
 
 class VIEW3D_PT_UpscaleMVImages(WorkflowAPIUILoader):
     bl_label = "Step 2: Upscale generated Multi-view Images"
@@ -541,7 +610,7 @@ class VIEW3D_PT_UpscaleMVImages(WorkflowAPIUILoader):
         row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
         row = layout.row()
         op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Upscale All")
-        op.api_fliename = self.api_filename
+        op.api_filename = self.api_filename
         
 class VIEW3D_PT_VFI(WorkflowAPIUILoader):
     bl_label = "Step 2.5: VFI for Upscaled Images"
@@ -556,7 +625,7 @@ class VIEW3D_PT_VFI(WorkflowAPIUILoader):
         
         row = layout.row()
         op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Video Frame Interpolation")
-        op.api_fliename = self.api_filename
+        op.api_filename = self.api_filename
         
 class VIEW3D_PT_BakeTexture(WorkflowAPIUILoader):
     bl_label = "Step 3 (Optional): Bake Result to Texture"
