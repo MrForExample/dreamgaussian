@@ -17,7 +17,7 @@
   },
   "8": {
     "inputs": {
-      "filename_prefix": "Cammy_NoBangs\\Images_VFI\\GMFSS",
+      "filename_prefix": "BlenderAI43D_Generated\\Stage_Output_3\\image",
       "images": [
         "6",
         0
@@ -42,25 +42,12 @@
   },
   "10": {
     "inputs": {
-      "directory": [
-        "11",
-        0
-      ],
       "image_load_cap": 0,
       "start_index": 0
     },
     "class_type": "LoadImagesFromDir //Inspire",
     "_meta": {
-      "title": "Load Image Batch From Dir (Inspire)"
-    }
-  },
-  "11": {
-    "inputs": {
-      "string": ""
-    },
-    "class_type": "Simple String",
-    "_meta": {
-      "title": "Path [Sys] [Imgs_In]"
+      "title": "Load Image Batch From Dir (Inspire) [Sys] [Imgs_In]"
     }
   }
 }

@@ -1,0 +1,32 @@
+class BlenderOrbitRender_PropertyGroup(PropertyGroup):
+    distance_to_origin: FloatProperty(name="distance_to_origin", default=1.75, description=)
+    elevation_range: FloatProperty(name="elevation_range", default=45, description=)
+    azimuth_slice_per_elevation: IntProperty(name="azimuth_slice_per_elevation", default=1.75, description=)
+    elevation_slice_per_azimuth: IntProperty(name="elevation_slice_per_azimuth", default=1.75, description=)
+    azimuth_minibatch_proportion: FloatProperty(name="azimuth_minibatch_proportion", default=1, description=)
+    elevation_minibatch_proportion: FloatProperty(name="elevation_minibatch_proportion", default=1, description=)
+
+class VIEW3D_OT_BlenderOrbitRender(Operator):
+    bl_idname = "render.orbit"
+    bl_label = "Orbit render around world origin"
+    
+    def execute(self, context):
+        
+        return {'FINISHED'}
+    
+class VIEW3D_PT_HelpfulFunctions(BlenderAI43DPanel):  # class naming convention ‘CATEGORY_PT_name’
+
+    bl_label = "Functions to process AI's input & result"  # found at the top of the Panel
+
+    def draw(self, context):
+        pass
+        
+def force_redraw():
+    """
+        A Blender panel is redrawn every time the panel needs to be updated, 
+        such as when the user interacts with the panel or when the Blender application window is resized
+    """
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()

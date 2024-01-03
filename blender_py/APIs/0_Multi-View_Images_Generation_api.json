@@ -49,7 +49,7 @@
   },
   "12": {
     "inputs": {
-      "filename_prefix": "Cammy_NoBangs\\Images_mm_v3\\image",
+      "filename_prefix": "BlenderAI43D_Generated\\Stage_Output_0\\image",
       "images": [
         "10",
         0
@@ -638,25 +638,13 @@
   },
   "206": {
     "inputs": {
-      "directory": [
-        "207",
-        0
-      ],
+      "directory": "C:\\Users\\reall\\Softwares\\ComfyUI_windows_portable\\ComfyUI\\input\\BlenderAI43D_Inputs",
       "image_load_cap": 0,
       "start_index": 0
     },
     "class_type": "LoadImagesFromDir //Inspire",
     "_meta": {
-      "title": "Load Image Batch From Dir (Inspire)"
-    }
-  },
-  "207": {
-    "inputs": {
-      "string": ""
-    },
-    "class_type": "Simple String",
-    "_meta": {
-      "title": "Path [Sys] [Imgs_In]"
+      "title": "Load Image Batch From Dir (Inspire) [Sys] [Imgs_In]"
     }
   },
   "221": {

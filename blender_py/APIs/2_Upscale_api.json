@@ -58,7 +58,7 @@
       "force_uniform_tiles": false,
       "tiled_decode": false,
       "image": [
-        "229",
+        "262",
         0
       ],
       "model": [
@@ -120,7 +120,7 @@
         0
       ],
       "image": [
-        "229",
+        "262",
         0
       ]
     },
@@ -140,7 +140,7 @@
   },
   "195": {
     "inputs": {
-      "filename_prefix": "Images_enhanced\\image",
+      "filename_prefix": "BlenderAI43D_Generated\\Stage_Output_2\\image",
       "images": [
         "191",
         0
@@ -287,25 +287,13 @@
   },
   "229": {
     "inputs": {
-      "directory": [
-        "230",
-        0
-      ],
+      "directory": "C:\\Users\\reall\\Softwares\\ComfyUI_windows_portable\\ComfyUI\\output\\BlenderAI43D_Generated\\Stage_Output_1",
       "image_load_cap": 0,
       "start_index": 0
     },
     "class_type": "LoadImagesFromDir //Inspire",
     "_meta": {
-      "title": "Load Image Batch From Dir (Inspire)"
-    }
-  },
-  "230": {
-    "inputs": {
-      "string": ""
-    },
-    "class_type": "Simple String",
-    "_meta": {
-      "title": "Path [Sys] [Imgs_In]"
+      "title": "Load Image Batch From Dir (Inspire) [Sys] [Imgs_In]"
     }
   },
   "238": {
@@ -456,7 +444,7 @@
   },
   "253": {
     "inputs": {
-      "value": 512
+      "value": 640
     },
     "class_type": "INTConstant",
     "_meta": {
@@ -465,7 +453,7 @@
   },
   "254": {
     "inputs": {
-      "value": 512
+      "value": 640
     },
     "class_type": "INTConstant",
     "_meta": {
@@ -488,6 +476,18 @@
     "class_type": "FloatConstant",
     "_meta": {
       "title": "End At"
+    }
+  },
+  "262": {
+    "inputs": {
+      "image": [
+        "229",
+        0
+      ]
+    },
+    "class_type": "ImpactImageBatchToImageList",
+    "_meta": {
+      "title": "Image batch to Image List"
     }
   }
 }
