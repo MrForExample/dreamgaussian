@@ -21,6 +21,7 @@ import uuid
 import json
 from urllib import request
 import os
+import shutil
 import re
 import hashlib
 import enum
@@ -207,6 +208,7 @@ class ComfyUIAPIHandler:
         self.abs_stages_input_folders_path = []
         self.abs_stages_output_folders_path = []
         self.minibatch_props_names = []
+        self.autoflow_props_names = []
         
         last_output_folder_path = self.rendered_input_imgs_folder_path
         os.makedirs(last_output_folder_path, exist_ok=True)
@@ -221,7 +223,7 @@ class ComfyUIAPIHandler:
                 
                 if node_sys.node_type == ComfyUIAPIHandler.NodeType.IMGS_IN:
                     node_data_params[LOAD_IMG_DIR_PARAM_NAME] = last_output_folder_path
-                    self.abs_stages_input_folders_path.append(stage_output_folder_abs_path)
+                    self.abs_stages_input_folders_path.append(last_output_folder_path)
             
             # then set the output images path
             for node_title in api_sys:
@@ -248,8 +250,16 @@ class ComfyUIAPIHandler:
             setattr(bpy.types.Scene, minibatch_prop_name, minibatch_prop)
             self.minibatch_props_names.append(minibatch_prop_name)
             
+            # set property to auto-flow the workflow
+            autoflow_prop_prefix = 'AutoWorkflow'
+            autoflow_prop_name = get_unique_prop_name(autoflow_prop_prefix + api_filename, prefix=autoflow_prop_prefix)
+            autoflow_prop = BoolProperty(name=autoflow_prop_name, default=False,
+                                           description="Continue running this workflow when last active workflow is finished")
+            setattr(bpy.types.Scene, autoflow_prop_name, autoflow_prop)
+            self.autoflow_props_names.append(autoflow_prop_name)
+            
         #print(f"self.all_api_data: {self.all_api_data}")
-                    
+
     class NodeType(enum.Enum):
         # Var types
         PARAMS = 0
@@ -448,33 +458,60 @@ class ComfyUIAPIHandler:
         with request.urlopen(interrupt_request) as response:
             return response
     
-    def run_comfyUI_client(self, api_filename):
+    def run_comfyUI_client(self, strat_api_filename):
         scene = bpy.context.scene
-        stage_input_folder_abs_path = self.abs_stages_input_folders_path[self.workflow_api_names.index(api_filename)]
-        all_inputs_num = len([name for name in os.listdir(stage_input_folder_abs_path) 
-                if os.path.isfile(os.path.join(stage_input_folder_abs_path, name))])   # count the number of all images in the input folder
-        api_filename_index = self.workflow_api_names.index(api_filename)
-        minibatch_prop = getattr(scene, self.minibatch_props_names[api_filename_index])
-        max_minibatch_size = int(all_inputs_num * minibatch_prop)
         
-        for start_index in range(0, all_inputs_num, max_minibatch_size):
-            load_cap = all_inputs_num - start_index if start_index + max_minibatch_size > all_inputs_num else max_minibatch_size
-            prompt = self.set_minibatch_api_data(api_filename, start_index, load_cap)
-        
-            prompt_id = self.queue_prompt(prompt)['prompt_id']
-            while True:
-                out = self.ws.recv()
-                if isinstance(out, str):
-                    message = json.loads(out)
-                    if message['type'] == 'executing':
-                        data = message['data']
-                        if data['node'] is None and data['prompt_id'] == prompt_id:
-                            self.is_prompt_running = False
-                            break #Execution is done
+        start_api_filename_index = self.workflow_api_names.index(strat_api_filename)
+        last_active_output_folder_abs_path = self.abs_stages_input_folders_path[start_api_filename_index]
+        for api_filename_index in range(start_api_filename_index, len(self.workflow_api_names)):
+            
+            if start_api_filename_index == api_filename_index or getattr(scene, self.autoflow_props_names[api_filename_index]):
+                stage_input_folder_abs_path = self.abs_stages_input_folders_path[api_filename_index]
+                stage_output_folder_abs_path = self.abs_stages_output_folders_path[api_filename_index]
+                
+                # Copy all the files form last output directory to output directory
+                if last_active_output_folder_abs_path != stage_input_folder_abs_path:
+                    for filename in os.listdir(last_active_output_folder_abs_path):
+                        shutil.copy(
+                            os.path.join(last_active_output_folder_abs_path, filename), 
+                            os.path.join(stage_input_folder_abs_path, filename)
+                        )
+                
+                api_filename = self.workflow_api_names[api_filename_index]
+                self.sync_workflow_api_data(api_filename)
+                
+                all_inputs_num = len([name for name in os.listdir(stage_input_folder_abs_path) 
+                        if os.path.isfile(os.path.join(stage_input_folder_abs_path, name))])   # count the number of all images in the input folder
+                
+                if all_inputs_num > 0:
+                    minibatch_prop = getattr(scene, self.minibatch_props_names[api_filename_index])
+                    max_minibatch_size = int(all_inputs_num * minibatch_prop)
+                    
+                    for start_index in range(0, all_inputs_num, max_minibatch_size):
+                        load_cap = all_inputs_num - start_index if start_index + max_minibatch_size > all_inputs_num else max_minibatch_size
+                        print(f"start_index: {start_index}; load_cap: {load_cap}")
+                        prompt = self.set_minibatch_api_data(api_filename, start_index, load_cap)
+                    
+                        prompt_id = self.queue_prompt(prompt)['prompt_id']
+                        while True:
+                            out = self.ws.recv()
+                            if isinstance(out, str):
+                                message = json.loads(out)
+                                if message['type'] == 'executing':
+                                    data = message['data']
+                                    if data['node'] is None and data['prompt_id'] == prompt_id:
+                                        self.is_prompt_running = False
+                                        break #Execution is done
+                            else:
+                                continue #previews are binary data
+                            
+                    last_active_output_folder_abs_path = stage_output_folder_abs_path
+                    
                 else:
-                    continue #previews are binary data
+                    print(f"[ERROR] There is no inputs inside: {stage_input_folder_abs_path} for workflow api: {api_filename}")
+                    break
     
-    def prompt_comfyUI_servers(self, api_filename):
+    def prompt_comfyUI_servers(self, strat_api_filename):
         if not self.ws.connected:
             try:
                 self.ws.connect(self.ws_connect_addr)
@@ -486,12 +523,11 @@ class ComfyUIAPIHandler:
                 self.cancel_prompt()
                 self.ws_thread.join()
             
-            self.sync_workflow_api_data(api_filename)
-            self.ws_thread = threading.Thread(target=self.run_comfyUI_client, args=(api_filename,))
+            self.ws_thread = threading.Thread(target=self.run_comfyUI_client, args=(strat_api_filename,))
             self.ws_thread.start()
             
             self.is_prompt_running = True
-            #self.run_comfyUI_client(prompt_id)                
+            #self.run_comfyUI_client(prompt_id)
 
 class VIEW3D_OT_ImportPath(Operator):
     """This appears in the tooltip of the operator and in the generated docs"""
@@ -558,14 +594,18 @@ class TextImg2TextureSubPanel(BlenderAI43DPanel):
     bl_parent_id = "VIEW3D_PT_TextImg2Texture"
     
 class WorkflowAPIUILoader(TextImg2TextureSubPanel):
+    api_filename_index = 0
     api_filename = ""
 
     def __init__(self, api_filename_index=0):
         super().__init__()
+        self.api_filename_index = api_filename_index
         self.api_filename = comfyUIAPIHandler.workflow_api_names[api_filename_index]
 
-    def load_vars(self, layout, context):
-        scene = context.scene
+    def load_vars(self, layout, scene):        
+        if self.api_filename_index > 0:
+            row = layout.row()
+            row.prop(scene, comfyUIAPIHandler.autoflow_props_names[self.api_filename_index], text="Auto-flow")  
 
         for node_title in comfyUIAPIHandler.all_node_var_sorted[self.api_filename]:
             node_var = comfyUIAPIHandler.all_api_var[self.api_filename][node_title]
@@ -591,6 +631,17 @@ class WorkflowAPIUILoader(TextImg2TextureSubPanel):
                     row.prop(scene, node_var_params[param_name], text=param_name)
                     
             layout.separator(factor=1)
+            
+    def load_generate_ot(self, layout, scene, allow_draft=True):
+        if allow_draft:
+            row = layout.row()
+            row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
+            
+        row = layout.row()
+        row.prop(scene, comfyUIAPIHandler.minibatch_props_names[self.api_filename_index], text="Minibatch Proportion")
+        row = layout.row()
+        op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Generate")
+        op.api_filename = self.api_filename
         
 class VIEW3D_PT_MVImagesGeneration(WorkflowAPIUILoader):
     bl_label = "Step 1: Multi-view Images Generation"
@@ -600,21 +651,11 @@ class VIEW3D_PT_MVImagesGeneration(WorkflowAPIUILoader):
 
     def draw(self, context):
         layout = self.layout
-        
-        row = layout.row()
-        
-        if REF_STYLE_IMG_NAME in bpy.data.images:
-            texture = bpy.data.textures[REF_STYLE_IMG_NAME]
-            row.template_ID_preview(texture, "image", open="image.open")
-            print(texture.image.filepath) # absolute path
+        scene = context.scene
             
-        self.load_vars(layout, context)
+        self.load_vars(layout, scene)
         
-        row = layout.row()
-        row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
-        row = layout.row()
-        op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Generate")
-        op.api_filename = self.api_filename
+        self.load_generate_ot(layout, scene)
     
 class VIEW3D_PT_FaceDetailer(WorkflowAPIUILoader):
     bl_label = "Step 1.5 (Optional): Face Detailer"
@@ -625,13 +666,11 @@ class VIEW3D_PT_FaceDetailer(WorkflowAPIUILoader):
     def draw(self, context):
         layout = self.layout
         
-        self.load_vars(layout, context)
+        scene = context.scene
+            
+        self.load_vars(layout, scene)
         
-        row = layout.row()
-        row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
-        row = layout.row()
-        op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Face Detailing All")
-        op.api_filename = self.api_filename
+        self.load_generate_ot(layout, scene)
 
 class VIEW3D_PT_UpscaleMVImages(WorkflowAPIUILoader):
     bl_label = "Step 2: Upscale generated Multi-view Images"
@@ -642,13 +681,11 @@ class VIEW3D_PT_UpscaleMVImages(WorkflowAPIUILoader):
     def draw(self, context):
         layout = self.layout
         
-        self.load_vars(layout, context)
+        scene = context.scene
+            
+        self.load_vars(layout, scene)
         
-        row = layout.row()
-        row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Draft")
-        row = layout.row()
-        op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Upscale All")
-        op.api_filename = self.api_filename
+        self.load_generate_ot(layout, scene)
         
 class VIEW3D_PT_VFI(WorkflowAPIUILoader):
     bl_label = "Step 2.5: VFI for Upscaled Images"
@@ -659,11 +696,11 @@ class VIEW3D_PT_VFI(WorkflowAPIUILoader):
     def draw(self, context):
         layout = self.layout
         
-        self.load_vars(layout, context)
+        scene = context.scene
+            
+        self.load_vars(layout, scene)
         
-        row = layout.row()
-        op = row.operator(VIEW3D_OT_CallComfyUIAPI.bl_idname, text="Video Frame Interpolation")
-        op.api_filename = self.api_filename
+        self.load_generate_ot(layout, scene, allow_draft=False)
         
 class VIEW3D_PT_BakeTexture(WorkflowAPIUILoader):
     bl_label = "Step 3 (Optional): Bake Result to Texture"

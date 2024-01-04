@@ -2,7 +2,9 @@
   "1": {
     "inputs": {
       "ckpt_name": "aingdiffusion_v113.safetensors",
-      "beta_schedule": "sqrt_linear (AnimateDiff)"
+      "beta_schedule": "sqrt_linear (AnimateDiff)",
+      "use_custom_scale_factor": false,
+      "scale_factor": 0.18215
     },
     "class_type": "CheckpointLoaderSimpleWithNoiseSelect",
     "_meta": {
@@ -333,7 +335,7 @@
       "mid_level": 165,
       "white_level": 255,
       "image": [
-        "192",
+        "283",
         0
       ]
     },
@@ -612,30 +614,6 @@
       "title": "Image Upscale Resolution Height [Var] [Order: 10]"
     }
   },
-  "192": {
-    "inputs": {
-      "images": [
-        "206",
-        0
-      ]
-    },
-    "class_type": "Images to Linear",
-    "_meta": {
-      "title": "Images to Linear"
-    }
-  },
-  "194": {
-    "inputs": {
-      "images": [
-        "162",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
-    }
-  },
   "206": {
     "inputs": {
       "directory": "C:\\Users\\reall\\Softwares\\ComfyUI_windows_portable\\ComfyUI\\input\\BlenderAI43D_Inputs",
@@ -744,6 +722,26 @@
     "class_type": "FloatConstant",
     "_meta": {
       "title": "NN Latent Upscale Value [Var] [Order: 11]"
+    }
+  },
+  "283": {
+    "inputs": {
+      "brightness": 0,
+      "contrast": 1,
+      "saturation": 0,
+      "sharpness": 1,
+      "blur": 0,
+      "gaussian_blur": 0,
+      "edge_enhance": 0,
+      "detail_enhance": "false",
+      "image": [
+        "206",
+        0
+      ]
+    },
+    "class_type": "Image Filter Adjustments",
+    "_meta": {
+      "title": "Image Filter Adjustments (Make Image Black&White)"
     }
   }
 }
